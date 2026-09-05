@@ -19,6 +19,7 @@
   </div>
   <nav id="tabs" class="tabs" aria-label="Secciones">
     <button class="tab active" data-tab="backlog">Backlog</button>
+    <button class="tab" data-tab="preguntas">Preguntas</button>
     <button class="tab" data-tab="kanban">Kanban</button>
     <button class="tab" data-tab="checklists">Checklists</button>
     <button class="tab" data-tab="asis">AS-IS</button>
@@ -83,6 +84,57 @@
     </div>
 
     <div id="backlogList" class="stack"></div>
+  </section>
+
+  <!-- PREGUNTAS -->
+  <section id="panel-preguntas" class="panel">
+    <div class="subtabs" id="preguntasSubtabs">
+      <button class="subtab active" data-psub="banco">Banco de preguntas</button>
+      <button class="subtab" data-psub="entrevistas">Entrevistas</button>
+    </div>
+
+    <div id="psub-banco" class="subpanel active">
+      <p class="hint">Marca cada pregunta conforme la vayas cubriendo en campo o en entrevista.</p>
+      <select id="qCategoria">
+        <option value="E1">E1 · Producción de plantas</option>
+        <option value="E2">E2 · Diseño y construcción de jardines</option>
+        <option value="E3">E3 · Mantenimiento de áreas verdes</option>
+        <option value="E4">E4 · Renta y compraventa de equipo</option>
+        <option value="transversal">Transversales (gobernanza, comercial, equipo, herramientas)</option>
+      </select>
+      <div id="questionsChecklist" class="stack"></div>
+    </div>
+
+    <div id="psub-entrevistas" class="subpanel">
+      <p class="hint">Usa el guion de 5 preguntas como base y registra lo que te comparta cada persona.</p>
+      <form id="entrevistaForm" class="card form">
+        <div class="row">
+          <input id="eNombre" type="text" placeholder="Nombre" required>
+          <input id="eRol" type="text" placeholder="Rol" required>
+        </div>
+        <select id="eLinea">
+          <option value="E1">E1 · Producción de plantas</option>
+          <option value="E2">E2 · Diseño y construcción</option>
+          <option value="E3">E3 · Mantenimiento</option>
+          <option value="E4">E4 · Renta/compraventa equipo</option>
+          <option value="E5">E5 · Transversal</option>
+        </select>
+        <textarea id="eNotas" rows="9">¿Cuál es tu día a día?
+
+¿Qué actividad te quita más tiempo sin aportar valor?
+
+¿Qué información necesitas para hacer tu trabajo y hoy no tienes?
+
+¿Qué cambiarías si pudieras cambiar una sola cosa del proceso?
+
+¿Con quién dependes o coordinas para completar tu trabajo?
+</textarea>
+        <button type="submit">✓ Guardar entrevista</button>
+      </form>
+
+      <h3 class="section-title">Entrevistas registradas</h3>
+      <div id="entrevistaHistory" class="stack"></div>
+    </div>
   </section>
 
   <!-- KANBAN -->
