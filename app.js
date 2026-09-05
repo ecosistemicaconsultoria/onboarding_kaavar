@@ -39,6 +39,79 @@ const FIELD_ITEMS = {
 
 const LINEA_LABELS = { vivero: "Vivero", obra: "Obra", mantenimiento: "Mantenimiento" };
 
+const QUESTIONS_BANK = {
+  E1: [
+    "¿Qué especies producen actualmente y en qué volumen?",
+    "¿Cuál es la capacidad instalada (m² de vivero/invernadero)?",
+    "¿Cómo deciden qué producir: demanda histórica, pedido, temporada?",
+    "¿Cuáles son los tiempos de ciclo por especie (siembra → venta)?",
+    "¿Quiénes son los proveedores clave de insumos (sustrato, semilla, esquejes, fertilizante)?",
+    "¿Cómo controlan sanidad vegetal (plagas, enfermedades)? ¿Hay bitácora?",
+    "¿Cómo registran el inventario hoy (Excel, papel, ninguno)?",
+    "¿Cuál es la merma o pérdida promedio y a qué la atribuyen?",
+    "¿Cómo se fija el precio de venta?",
+    "¿Existe algún KPI que ya midan (rotación, mortandad, producción por m²)?"
+  ],
+  E2: [
+    "¿Cómo inicia un proyecto: levantamiento en sitio, medidas, entrevista con cliente?",
+    "¿Quién diseña y con qué herramienta (AutoCAD, SketchUp, a mano)?",
+    "¿Cuál es el tiempo promedio de un proyecto, de cotización a entrega?",
+    "¿Trabajan con cuadrillas propias, subcontratistas, o ambos?",
+    "¿Cómo se controla el avance de obra (bitácora, fotos, visitas)?",
+    "¿Cómo manejan cambios de alcance o extras durante la obra?",
+    "¿Qué garantía dan post-entrega (plantas, obra civil, riego)?",
+    "¿Cómo calculan el margen por proyecto?",
+    "¿Tienen un portafolio de proyectos anteriores documentado?",
+    "¿Cuál es el principal cuello de botella hoy en esta línea?"
+  ],
+  E3: [
+    "¿Cuántos clientes recurrentes tienen y de qué tipo (residencial, comercial, fraccionamientos)?",
+    "¿Con qué frecuencia se visita cada cliente?",
+    "¿Cómo están organizadas las rutas y cuadrillas?",
+    "¿Existe un checklist de servicio por visita?",
+    "¿Cómo se cobra: contrato mensual, por visita, por destajo?",
+    "¿Cómo se documenta el servicio (evidencia fotográfica, reporte al cliente)?",
+    "¿Cómo se manejan quejas o retrabajos?",
+    "¿Cuál es la rotación de personal de campo?",
+    "¿Qué insumos consume esta línea por visita/mes?",
+    "¿Existe algún indicador de satisfacción o retención de clientes?"
+  ],
+  E4: [
+    "¿Qué equipos manejan (catálogo)?",
+    "¿Cómo controlan qué está disponible vs. rentado en un momento dado?",
+    "¿Hay mantenimiento preventivo programado? ¿Quién lo hace?",
+    "¿Cómo se documentan los contratos de renta (depósito, garantía, plazos)?",
+    "¿De dónde compran el equipo que revenden?",
+    "¿Por qué canal se vende/renta hoy (Facebook, WhatsApp, mostrador)?",
+    "¿Qué tan rentable es esta línea comparada con las otras tres?"
+  ],
+  transversal: [
+    { group: "Gobernanza", text: "¿Cómo está la estructura organizacional hoy (organigrama real, no el de papel)?" },
+    { group: "Gobernanza", text: "¿Quién toma la decisión final en cada línea de negocio?" },
+    { group: "Gobernanza", text: "¿Qué esperan concretamente del rol de PM en los primeros 90 días?" },
+    { group: "Gobernanza", text: "¿Qué dolor específico motivó abrir esta posición?" },
+    { group: "Comercial", text: "¿Cómo llegan los leads hoy (Facebook, WhatsApp, referidos)?" },
+    { group: "Comercial", text: "¿Hay algún registro de clientes/prospectos (CRM, Excel, ninguno)?" },
+    { group: "Comercial", text: "¿Quién administra las redes sociales y cómo se conecta con ventas?" },
+    { group: "Equipo", text: "¿Cuántas personas hay por línea de negocio y qué roles tienen?" },
+    { group: "Equipo", text: "¿Hay personal que cruza entre líneas (ej. cuadrillas de mantenimiento y construcción)?" },
+    { group: "Herramientas y finanzas", text: "¿Qué usan hoy para gestionar proyectos y operación (papel, Excel, WhatsApp, algún software)?" },
+    { group: "Herramientas y finanzas", text: "¿Cómo se calculan costos y márgenes por línea?" },
+    { group: "Herramientas y finanzas", text: "¿Quién controla el presupuesto y cómo se reporta?" }
+  ]
+};
+
+const INTERVIEW_TEMPLATE = `¿Cuál es tu día a día?
+
+¿Qué actividad te quita más tiempo sin aportar valor?
+
+¿Qué información necesitas para hacer tu trabajo y hoy no tienes?
+
+¿Qué cambiarías si pudieras cambiar una sola cosa del proceso?
+
+¿Con quién dependes o coordinas para completar tu trabajo?
+`;
+
 const KANBAN_STAGES = [
   { key: "por-hacer", label: "Por hacer" },
   { key: "entrevistando", label: "Entrevistando" },
@@ -77,7 +150,9 @@ function defaultState() {
     visits: [],
     asis: [],
     riesgos: DEFAULT_RIESGOS.map((r) => ({ id: uid(), ...r })),
-    reportes: []
+    reportes: [],
+    questions: { E1: {}, E2: {}, E3: {}, E4: {}, transversal: {} },
+    entrevistas: []
   };
 }
 
@@ -139,12 +214,21 @@ document.querySelectorAll(".tab").forEach((btn) => {
   });
 });
 
-document.querySelectorAll(".subtab").forEach((btn) => {
+document.querySelectorAll(".subtab[data-sub]").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".subtab").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".subpanel").forEach((p) => p.classList.remove("active"));
+    document.querySelectorAll(".subtab[data-sub]").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll("#panel-checklists .subpanel").forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById("sub-" + btn.dataset.sub).classList.add("active");
+  });
+});
+
+document.querySelectorAll(".subtab[data-psub]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".subtab[data-psub]").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll("#panel-preguntas .subpanel").forEach((p) => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("psub-" + btn.dataset.psub).classList.add("active");
   });
 });
 
@@ -401,6 +485,96 @@ document.getElementById("visitHistory").addEventListener("click", (e) => {
   renderVisitHistory();
 });
 
+/* ---------- PREGUNTAS · Banco de preguntas ---------- */
+
+function renderQuestions() {
+  const cat = document.getElementById("qCategoria").value;
+  const box = document.getElementById("questionsChecklist");
+  const answered = state.questions[cat] || {};
+
+  if (cat === "transversal") {
+    let lastGroup = null;
+    box.innerHTML = QUESTIONS_BANK.transversal.map((q, idx) => {
+      const header = q.group !== lastGroup ? `<div class="question-group">${escapeHtml(q.group)}</div>` : "";
+      lastGroup = q.group;
+      return header + `
+        <label class="check-item ${answered[idx] ? "done" : ""}">
+          <input type="checkbox" data-idx="${idx}" ${answered[idx] ? "checked" : ""}>
+          <span>${escapeHtml(q.text)}</span>
+        </label>
+      `;
+    }).join("");
+  } else {
+    box.innerHTML = QUESTIONS_BANK[cat].map((text, idx) => `
+      <label class="check-item ${answered[idx] ? "done" : ""}">
+        <input type="checkbox" data-idx="${idx}" ${answered[idx] ? "checked" : ""}>
+        <span>${escapeHtml(text)}</span>
+      </label>
+    `).join("");
+  }
+}
+
+document.getElementById("qCategoria").addEventListener("change", renderQuestions);
+
+document.getElementById("questionsChecklist").addEventListener("change", (e) => {
+  const cb = e.target;
+  if (cb.type !== "checkbox") return;
+  const cat = document.getElementById("qCategoria").value;
+  if (!state.questions[cat]) state.questions[cat] = {};
+  state.questions[cat][cb.dataset.idx] = cb.checked;
+  saveState();
+  renderQuestions();
+});
+
+/* ---------- PREGUNTAS · Entrevistas ---------- */
+
+document.getElementById("entrevistaForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const item = {
+    id: uid(),
+    nombre: document.getElementById("eNombre").value.trim(),
+    rol: document.getElementById("eRol").value.trim(),
+    linea: document.getElementById("eLinea").value,
+    notas: document.getElementById("eNotas").value.trim(),
+    createdAt: Date.now()
+  };
+  if (!item.nombre || !item.rol) return;
+  state.entrevistas.unshift(item);
+  saveState();
+  e.target.reset();
+  document.getElementById("eNotas").value = INTERVIEW_TEMPLATE;
+  renderEntrevistas();
+  showToast("Entrevista guardada");
+});
+
+function renderEntrevistas() {
+  const box = document.getElementById("entrevistaHistory");
+  if (state.entrevistas.length === 0) {
+    box.innerHTML = `<div class="empty-state">Aún no registras entrevistas.</div>`;
+    return;
+  }
+  box.innerHTML = state.entrevistas.map((en) => `
+    <div class="visit-entry" data-id="${en.id}">
+      <div class="visit-entry-top">
+        <span>${escapeHtml(en.nombre)} · ${escapeHtml(en.rol)}</span>
+        <span>${EPICA_LABELS[en.linea] || en.linea}</span>
+      </div>
+      ${en.notas ? `<div class="notas">${escapeHtml(en.notas).replace(/\n/g, "<br>")}</div>` : ""}
+      <div class="item-actions">
+        <button class="delete" data-action="delete-entrevista" data-id="${en.id}">Eliminar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+document.getElementById("entrevistaHistory").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-action='delete-entrevista']");
+  if (!btn) return;
+  state.entrevistas = state.entrevistas.filter((en) => en.id !== btn.dataset.id);
+  saveState();
+  renderEntrevistas();
+});
+
 /* ---------- AS-IS ---------- */
 
 document.getElementById("asisForm").addEventListener("submit", (e) => {
@@ -585,6 +759,8 @@ document.getElementById("reporteList").addEventListener("click", (e) => {
 function renderAll() {
   renderBacklog();
   renderKanban();
+  renderQuestions();
+  renderEntrevistas();
   renderOnboarding();
   renderVisitChecklist();
   renderVisitHistory();
