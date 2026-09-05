@@ -1,4 +1,4 @@
-const CACHE = "kaavar-pm-v1";
+const CACHE = "kaavar-pm-v2";
 const ASSETS = [
   "./",
   "./index.html",
