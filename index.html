@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sprint 0 · Kaavar PM</title>
+<meta name="theme-color" content="#2e2016">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header-top">
+    <h1>Sprint 0 <span>· Kaavar PM</span></h1>
+    <button id="menuBtn" class="icon-btn" aria-label="Más opciones" aria-haspopup="true" aria-expanded="false">⋮</button>
+  </div>
+  <nav id="tabs" class="tabs" aria-label="Secciones">
+    <button class="tab active" data-tab="backlog">Backlog</button>
+    <button class="tab" data-tab="kanban">Kanban</button>
+    <button class="tab" data-tab="checklists">Checklists</button>
+    <button class="tab" data-tab="asis">AS-IS</button>
+    <button class="tab" data-tab="riesgos">Riesgos</button>
+    <button class="tab" data-tab="reporte">Reporte</button>
+  </nav>
+</header>
+
+<div id="menuPanel" class="menu-panel hidden">
+  <button id="exportBtn">⭳ Exportar respaldo (JSON)</button>
+  <label class="menu-file-label">⭱ Importar respaldo
+    <input type="file" id="importInput" accept="application/json" hidden>
+  </label>
+  <button id="resetBtn" class="danger">↺ Reiniciar todo</button>
+</div>
+
+<main id="app">
+
+  <!-- BACKLOG -->
+  <section id="panel-backlog" class="panel active">
+    <p class="hint">Cada historia se prioriza con MoSCoW y se mueve entre estados desde la pestaña Kanban.</p>
+
+    <form id="backlogForm" class="card form">
+      <div class="row">
+        <select id="bEpica" required>
+          <option value="" disabled selected>Épica</option>
+          <option value="E1">E1 · Producción de plantas</option>
+          <option value="E2">E2 · Diseño y construcción</option>
+          <option value="E3">E3 · Mantenimiento</option>
+          <option value="E4">E4 · Renta y compraventa de equipo</option>
+          <option value="E5">E5 · Transversal</option>
+        </select>
+        <select id="bPrioridad" required>
+          <option value="" disabled selected>Prioridad</option>
+          <option value="M">Must have</option>
+          <option value="S">Should have</option>
+          <option value="C">Could have</option>
+          <option value="W">Won't have (por ahora)</option>
+        </select>
+      </div>
+      <textarea id="bHistoria" rows="2" placeholder="Como ___ necesito ___ para ___" required></textarea>
+      <input id="bNotas" type="text" placeholder="Notas de descubrimiento (opcional)">
+      <button type="submit">+ Agregar al backlog</button>
+    </form>
+
+    <div class="filters">
+      <select id="filterEpica">
+        <option value="">Todas las épicas</option>
+        <option value="E1">E1 · Producción</option>
+        <option value="E2">E2 · Diseño/construcción</option>
+        <option value="E3">E3 · Mantenimiento</option>
+        <option value="E4">E4 · Renta/venta equipo</option>
+        <option value="E5">E5 · Transversal</option>
+      </select>
+      <select id="filterPrioridad">
+        <option value="">Toda prioridad</option>
+        <option value="M">Must have</option>
+        <option value="S">Should have</option>
+        <option value="C">Could have</option>
+        <option value="W">Won't have</option>
+      </select>
+    </div>
+
+    <div id="backlogList" class="stack"></div>
+  </section>
+
+  <!-- KANBAN -->
+  <section id="panel-kanban" class="panel">
+    <p class="hint">Mueve cada historia entre etapas del descubrimiento con las flechas.</p>
+    <div id="kanbanBoard" class="kanban-board"></div>
+  </section>
+
+  <!-- CHECKLISTS -->
+  <section id="panel-checklists" class="panel">
+    <div class="subtabs" id="checklistSubtabs">
+      <button class="subtab active" data-sub="semana">Primera semana</button>
+      <button class="subtab" data-sub="campo">Visita de campo</button>
+    </div>
+
+    <div id="sub-semana" class="subpanel active">
+      <p class="hint">Revísala al final de cada día durante tu primera semana.</p>
+      <div id="onboardingChecklist" class="stack"></div>
+    </div>
+
+    <div id="sub-campo" class="subpanel">
+      <p class="hint">Selecciona la línea, marca lo observado durante la visita y guarda tus notas.</p>
+      <div class="row">
+        <select id="visitLinea">
+          <option value="vivero">Vivero · Producción de plantas (E1)</option>
+          <option value="obra">Obra · Diseño y construcción (E2)</option>
+          <option value="mantenimiento">Mantenimiento de áreas verdes (E3)</option>
+        </select>
+        <input type="date" id="visitFecha">
+      </div>
+      <div id="visitChecklist" class="stack card"></div>
+      <textarea id="visitNotas" rows="3" placeholder="Notas y hallazgos de esta visita"></textarea>
+      <button id="saveVisitBtn">✓ Guardar visita</button>
+
+      <h3 class="section-title">Visitas registradas</h3>
+      <div id="visitHistory" class="stack"></div>
+    </div>
+  </section>
+
+  <!-- AS-IS -->
+  <section id="panel-asis" class="panel">
+    <p class="hint">Documenta el proceso tal como funciona hoy — sin corregirlo todavía.</p>
+    <form id="asisForm" class="card form">
+      <div class="row">
+        <select id="aLinea" required>
+          <option value="" disabled selected>Línea</option>
+          <option value="E1">E1 · Producción de plantas</option>
+          <option value="E2">E2 · Diseño y construcción</option>
+          <option value="E3">E3 · Mantenimiento</option>
+          <option value="E4">E4 · Renta/compraventa equipo</option>
+          <option value="E5">E5 · Transversal</option>
+        </select>
+        <input id="aEtapa" type="text" placeholder="Etapa del proceso" required>
+      </div>
+      <div class="row">
+        <input id="aResponsable" type="text" placeholder="Responsable">
+        <input id="aHerramienta" type="text" placeholder="Herramienta usada">
+      </div>
+      <div class="row">
+        <input id="aEntrada" type="text" placeholder="Entrada">
+        <input id="aSalida" type="text" placeholder="Salida">
+      </div>
+      <input id="aDolor" type="text" placeholder="Punto de dolor identificado">
+      <button type="submit">+ Agregar proceso</button>
+    </form>
+    <div id="asisList" class="stack"></div>
+  </section>
+
+  <!-- RIESGOS -->
+  <section id="panel-riesgos" class="panel">
+    <p class="hint">Anticipa problemas antes de que ocurran. Ajusta o agrega según lo que confirmes en campo.</p>
+    <form id="riesgoForm" class="card form">
+      <input id="rRiesgo" type="text" placeholder="Descripción del riesgo" required>
+      <div class="row">
+        <select id="rLinea">
+          <option value="E1">E1</option><option value="E2">E2</option>
+          <option value="E3">E3</option><option value="E4">E4</option>
+          <option value="E5" selected>Transversal</option>
+        </select>
+        <select id="rProbabilidad">
+          <option>Alta</option><option selected>Media</option><option>Baja</option>
+        </select>
+        <select id="rImpacto">
+          <option>Alto</option><option selected>Medio</option><option>Bajo</option>
+        </select>
+      </div>
+      <input id="rMitigacion" type="text" placeholder="Mitigación propuesta">
+      <button type="submit">+ Agregar riesgo</button>
+    </form>
+    <div id="riesgoList" class="stack"></div>
+  </section>
+
+  <!-- REPORTE SEMANAL -->
+  <section id="panel-reporte" class="panel">
+    <p class="hint">Llénalo los viernes en menos de 15 minutos y cópialo al canal que acordaste con los dueños.</p>
+    <form id="reporteForm" class="card form">
+      <div class="row">
+        <input id="repSemana" type="text" placeholder="Semana # (ej. 1)" required>
+        <input id="repFecha" type="date" required>
+      </div>
+      <textarea id="repAvances" rows="2" placeholder="Avances de la semana"></textarea>
+      <textarea id="repHallazgos" rows="2" placeholder="Hallazgos relevantes"></textarea>
+      <textarea id="repBloqueos" rows="2" placeholder="Bloqueos o pendientes"></textarea>
+      <textarea id="repDecisiones" rows="2" placeholder="Decisiones que requiero de los dueños"></textarea>
+      <textarea id="repSiguiente" rows="2" placeholder="La próxima semana me enfocaré en"></textarea>
+      <button type="submit">✓ Guardar reporte</button>
+    </form>
+    <div id="reporteList" class="stack"></div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
